@@ -2,8 +2,8 @@ from lbcapi import api
 import urllib.parse
 import time
 
-HMAC_KEY = 'cf4120eb00bebe14ea07784c601eb34f'
-HMAC_SECRET = '122687e7d6c63a7eb9f1835dfac37deddb4ebe5b9d587585f19b7addd38c81a8'
+HMAC_KEY = ''
+HMAC_SECRET = ''
 
 MAX_PRICE_INR = 2950000
 MIN_PRICE_INR = 2930000
