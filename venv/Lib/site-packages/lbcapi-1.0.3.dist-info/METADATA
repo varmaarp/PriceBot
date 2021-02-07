@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: lbcapi
+Version: 1.0.3
+Summary: Make API calls to LocalBitcoins API.
+Home-page: https://github.com/LocalBitcoins/lbcapi
+Author: LocalBitcoins Oy
+Author-email: UNKNOWN
+License: MIT License
+Platform: UNKNOWN
+Requires-Dist: requests
+
+UNKNOWN
+
+
