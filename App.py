@@ -82,7 +82,7 @@ def get_ad_with_imps_provider(ads):
 def update_ad_price(ad_id, price):
     response = conn.call('POST', '/api/ad-equation/{ad_id}/'.format(ad_id=ad_id), params={'price_equation': price}).json()
     print(response)
-    print('price updated to {price} for {ad_id}'.format(ad_id=ad_id, price=price))
+    return 'error' not in response.keys()
 
 
 def run():
@@ -119,8 +119,11 @@ def run():
                 print('We are top selling price')
                 continue
             if new_price < MAX_PRICE_INR:
-                update_ad_price(ad_id, new_price)
-                prev_price = new_price
+                if update_ad_price(ad_id, new_price):
+                    prev_price = new_price
+                    print('price updated to {price} for {ad_id}'.format(ad_id=ad_id, price=new_price))
+                else:
+                    print('Could not update price due to error')
             else:
                 print('Max limit reached for ad id {ad_id}'.format(ad_id=ad_id))
 
