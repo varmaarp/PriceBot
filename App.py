@@ -5,13 +5,11 @@ import time
 HMAC_KEY = ''
 HMAC_SECRET = ''
 
-MAX_PRICE_INR = 2950000
-MIN_PRICE_INR = 2930000
+MAX_PRICE_INR = 2880000
+MIN_PRICE_INR = 2850000
 
-
-CURRENCY = 'INR'
 PROVIDER_IMPS = 'BANK_TRANSFER_IMPS'
-SLEEP_TIME = 3
+SLEEP_TIME = 1
 
 conn = api.hmac(HMAC_KEY, HMAC_SECRET)
 
@@ -34,11 +32,12 @@ def get_current_ads_info():
     return price_dict
 
 
-def get_all_ads_selling_info():
+def get_all_ads_selling_info(current_ad_ids):
     response = conn.call('GET', '/sell-bitcoins-online/INR/.json').json()
     selling_price_dict = {}
-    selling_price_dict = read_selling_info_data(response['data'], selling_price_dict)
+    selling_price_dict = read_selling_info_data(response['data'], selling_price_dict, current_ad_ids)
 
+    '''
     while True:
         if 'pagination' in response.keys():
             pages = response['pagination']
@@ -52,15 +51,19 @@ def get_all_ads_selling_info():
                 break
         else:
             break
+    '''
 
     return selling_price_dict
 
 
-def read_selling_info_data(data, selling_price_dict):
+def read_selling_info_data(data, selling_price_dict, current_ad_ids):
     for ad in data['ad_list']:
         ad_id = ad['data']['ad_id']
         price = ad['data']['temp_price']
         user = ad['data']['profile']['username']
+
+        if ad_id in current_ad_ids:
+            continue
 
         if ad_id not in selling_price_dict.keys():
             selling_price_dict[ad_id] = {'price': price, 'user': user}
@@ -69,10 +72,10 @@ def read_selling_info_data(data, selling_price_dict):
 
 
 def get_ad_with_imps_provider(ads):
-    ads_with_matching_provider = []
+    ads_with_matching_provider = {}
     for ad_id, ad_info in ads.items():
         if ad_info['provider'] == PROVIDER_IMPS:
-            ads_with_matching_provider.append({'ad_id': ad_id, 'price': ad_info['price']})
+            ads_with_matching_provider[ad_id] = ad_info['price']
     return ads_with_matching_provider
 
 
@@ -83,15 +86,19 @@ def update_ad_price(ad_id, price):
 
 
 def run():
+    current_ads = get_current_ads_info()
+    ads_with_selected_provider = get_ad_with_imps_provider(current_ads)
+    ad_ids = list(ads_with_selected_provider)
+
+    if len(ads_with_selected_provider) < 1:
+        print('No ads found.')
+        return
+
+    prev_price = float(ads_with_selected_provider[ad_ids[0]])
+    print('our starting price {price}'.format(price=prev_price))
+
     while True:
-        current_ads = get_current_ads_info()
-        ads_with_selected_provider = get_ad_with_imps_provider(current_ads)
-
-        if len(ads_with_selected_provider) < 1:
-            print('No ads found.')
-            return
-
-        all_selling_price_ads = get_all_ads_selling_info()
+        all_selling_price_ads = get_all_ads_selling_info(ad_ids)
 
         filtered_ads = {k: v for (k, v) in all_selling_price_ads.items() if MAX_PRICE_INR >= float(v['price']) >= MIN_PRICE_INR}
 
@@ -106,20 +113,19 @@ def run():
         print('Found max selling price of {price} by user {user}'
               .format(price=max_selling_price, user=user_with_max_selling_price))
 
-        for ad in ads_with_selected_provider:
-            #if float(ad['price']) <= max_selling_price:
+        for ad_id, price in ads_with_selected_provider.items():
             new_price = max_selling_price + 1
+            if prev_price == new_price:
+                print('We are top selling price')
+                continue
             if new_price < MAX_PRICE_INR:
-                print('current selling price for ad {id} - {current_price}'.
-                      format(id=ad['ad_id'], current_price=ad['price']))
-                update_ad_price(ad['ad_id'], new_price)
+                update_ad_price(ad_id, new_price)
+                prev_price = new_price
             else:
-                print('Max limit reached for ad id {ad_id}'.format(ad_id=ad['ad_id']))
-            #else:
-                #print('Current selling price of {current_price} for ad is higher than max selling price in market'.
-                      #format(current_price=ad['price']))
+                print('Max limit reached for ad id {ad_id}'.format(ad_id=ad_id))
 
         time.sleep(SLEEP_TIME)
+
 
 run()
 
