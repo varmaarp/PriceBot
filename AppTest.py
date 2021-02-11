@@ -7,8 +7,8 @@ import datetime
 HMAC_KEY = ''
 HMAC_SECRET = ''
 
-MAX_PRICE_INR = 3350000
-MIN_PRICE_INR = 3300000
+MAX_PRICE_INR = 3329000
+MIN_PRICE_INR = 2900000
 
 PROVIDER_IMPS = 'BANK_TRANSFER_IMPS'
 SLEEP_TIME = 5
@@ -120,8 +120,18 @@ def run():
 
         filtered_ads = {k: v for (k, v) in all_selling_price_ads.items() if
                         MAX_PRICE_INR >= float(v['price']) >= MIN_PRICE_INR}
+
         log_message('\nfiltered prices count - {filtered}'.format(filtered=len(filtered_ads)))
         for k, v in filtered_ads.items():
+            log_message('{k} - {v1} {v2} {v3}'.format(k=k, v1=v['price'], v2=v['user'], v3=v['provider']))
+
+        filtered_dict = {}
+        for k,v in all_selling_price_ads.items():
+            if float(v['price']) < MAX_PRICE_INR and float(v['price']) > MIN_PRICE_INR:
+                filtered_dict[k] = {'price': v['price'], 'user': v['user'], 'provider': v['provider']}
+
+        log_message('\nfiltered prices count2 - {filtered}'.format(filtered=len(filtered_dict)))
+        for k, v in filtered_dict.items():
             log_message('{k} - {v1} {v2} {v3}'.format(k=k, v1=v['price'], v2=v['user'], v3=v['provider']))
 
         if len(filtered_ads.keys()) < 1:

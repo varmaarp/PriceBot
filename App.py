@@ -97,6 +97,8 @@ def run():
     prev_price = float(ads_with_selected_provider[ad_ids[0]])
     print('our starting price {price}'.format(price=prev_price))
 
+    print('our range is from {min_val} to {max_val}'.format(min_val=MIN_PRICE_INR, max_val=MAX_PRICE_INR))
+
     while True:
         all_selling_price_ads = get_all_ads_selling_info(ad_ids)
 
