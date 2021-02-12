@@ -2,8 +2,11 @@ from lbcapi import api
 import urllib.parse
 import time
 
-HMAC_KEY = ''
-HMAC_SECRET = ''
+HMAC_KEY_READ = ''
+HMAC_SECRET_READ = ''
+
+HMAC_KEY_WRITE = ''
+HMAC_SECRET_WRITE = ''
 
 MAX_PRICE_INR = 2880000
 MIN_PRICE_INR = 2850000
@@ -11,11 +14,12 @@ MIN_PRICE_INR = 2850000
 PROVIDER_IMPS = 'NATIONAL_BANK'
 SLEEP_TIME = 1
 
-conn = api.hmac(HMAC_KEY, HMAC_SECRET)
+conn_read = api.hmac(HMAC_KEY_READ, HMAC_SECRET_READ)
+conn_write = api.hmac(HMAC_KEY_WRITE, HMAC_SECRET_WRITE)
 
 
 def get_current_ads_info():
-    response = conn.call('GET', '/api/ads/').json()
+    response = conn_write.call('GET', '/api/ads/').json()
     data = response['data']
     ad_list = data['ad_list']
     price_dict = {}
@@ -33,7 +37,7 @@ def get_current_ads_info():
 
 
 def get_all_ads_selling_info(current_ad_ids):
-    response = conn.call('GET', '/sell-bitcoins-online/INR/.json').json()
+    response = conn_read.call('GET', '/sell-bitcoins-online/INR/.json').json()
     selling_price_dict = {}
     selling_price_dict = read_selling_info_data(response['data'], selling_price_dict, current_ad_ids)
 
@@ -80,7 +84,7 @@ def get_ad_with_imps_provider(ads):
 
 
 def update_ad_price(ad_id, price):
-    response = conn.call('POST', '/api/ad-equation/{ad_id}/'.format(ad_id=ad_id), params={'price_equation': price}).json()
+    response = conn_write.call('POST', '/api/ad-equation/{ad_id}/'.format(ad_id=ad_id), params={'price_equation': price}).json()
     print(response)
     return 'error' not in response.keys()
 
